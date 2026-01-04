@@ -97,7 +97,7 @@
 
         .console-box { 
             width: 100%; 
-            height: 220px; 
+            height: 240px; 
             border: 1px solid #444; 
             background: rgba(5, 5, 5, 0.95); 
             padding: 15px; 
@@ -123,7 +123,7 @@
     <div id="overlay"></div>
     <div class="grid-bg"></div>
 
-    <audio id="bg-music" loop preload="auto"></audio>
+    <audio id="bg-music" loop></audio>
 
     <div class="container">
         <div class="typing-container">
@@ -132,7 +132,7 @@
             <div class="cursor" id="cursor"></div>
         </div>
 
-        <div class="status-text" id="status-display">SYSTEM_BOOT_SEQUENCE...</div>
+        <div class="status-text" id="status-display">INITIALIZING...</div>
         <div class="progress-outer">
             <div class="progress-bar-fill" id="progress"></div>
         </div>
@@ -150,13 +150,16 @@
         const music = document.getElementById('bg-music');
         const randomTrack = playlist[Math.floor(Math.random() * playlist.length)];
         music.src = randomTrack;
-        music.volume = 0.2;
+        music.volume = 0.4;
 
-        function attemptPlay() {
-            music.play().catch(() => {});
+        function forcePlay() {
+            music.play().then(() => {
+                window.removeEventListener('mousedown', forcePlay);
+                window.removeEventListener('keydown', forcePlay);
+            }).catch(e => console.log("Waiting for click..."));
         }
-        window.addEventListener('mousedown', attemptPlay, { once: true });
-        window.addEventListener('keydown', attemptPlay, { once: true });
+        window.addEventListener('mousedown', forcePlay);
+        window.addEventListener('keydown', forcePlay);
 
         const textTarget = document.getElementById('shitty-text');
         const cursor = document.getElementById('cursor');
@@ -172,9 +175,9 @@
                 setTimeout(() => { cursor.style.display = 'none'; }, 1000);
             }
         }
-        setTimeout(typeOnce, 500);
+        setTimeout(typeOnce, 600);
 
-        const images = ['1.jpg', '2.jpg', '3.jpg']; 
+        const images = ['1.jpg', '2.jpg', '3.jpg', '4.jpg']; 
         const bgContainer = document.getElementById('bg-container');
         images.forEach((src, i) => {
             const div = document.createElement('div');
@@ -187,13 +190,12 @@
         setInterval(() => {
             const slides = document.querySelectorAll('.bg-slide');
             const active = document.querySelector('.bg-slide.active');
-            if (active) {
+            if(active){
                 active.classList.remove('active');
                 let next = active.nextElementSibling || slides[0];
                 next.classList.add('active');
             }
         }, 5000);
-
         setInterval(() => {
             const snow = document.createElement('div');
             snow.innerHTML = '❄';
@@ -210,7 +212,7 @@
             line.className = 'log-line';
             line.innerHTML = text.toUpperCase();
             consoleBox.appendChild(line);
-            if (consoleBox.childNodes.length > 9) consoleBox.removeChild(consoleBox.firstChild);
+            if (consoleBox.childNodes.length > 10) consoleBox.removeChild(consoleBox.firstChild);
         }
 
         function SetStatusChanged(status) {
@@ -224,7 +226,8 @@
         }
 
         if (!navigator.userAgent.includes("Valve Source")) {
-            addLog(`Playing random track: ${randomTrack}`);
+            addLog("Random track selected: " + randomTrack);
+            addLog("Click anywhere to enable sound");
             let p = 0;
             setInterval(() => { if(p<100){ p++; document.getElementById('progress').style.width = p+'%'; } }, 100);
         }
