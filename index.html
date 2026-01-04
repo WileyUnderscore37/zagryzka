@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Z-shitty Loading Screen</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --main-color: #ff8000; 
-            --bg-overlay: rgba(0, 0, 0, 0.8);
+            --main-color: #FF7F00; 
+            --bg-overlay: rgba(0, 0, 0, 0.9);
         }
 
         body {
@@ -14,7 +15,7 @@
             padding: 0;
             background-color: #000;
             color: white;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'IBM Plex Mono', monospace;
             overflow: hidden;
             height: 100vh;
             display: flex;
@@ -22,110 +23,97 @@
             justify-content: center;
         }
 
-        #bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255, 127, 0, 0.07) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 127, 0, 0.07) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        #bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3; }
         .bg-slide { 
             position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-size: cover; 
-            background-position: center; 
-            opacity: 0; 
-            transition: opacity 1.5s ease-in-out; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background-size: cover; background-position: center; 
+            opacity: 0; transition: opacity 1.5s ease-in-out; 
         }
         .bg-slide.active { opacity: 1; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: -1; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: -2; }
 
-        .container { z-index: 10; text-align: center; width: 800px; }
+        .container { z-index: 10; text-align: center; width: 850px; }
 
-        h1 { 
-            font-size: 4rem; 
-            margin: 0; 
-            font-family: Arial, sans-serif; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            text-shadow: 0 0 20px var(--main-color); 
+        .typing-container {
+            font-size: 5.5rem;
+            font-weight: 700;
+            letter-spacing: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            min-height: 120px;
         }
-        h1 span { color: var(--main-color); }
 
-        .status-text { text-align: left; font-size: 13px; margin: 10px 0 5px 0; color: #bbb; }
-
-        .progress-bar-container { 
-            width: 100%; 
-            height: 20px; 
-            border: 1px solid #333; 
-            background: #000; 
-            margin-bottom: 10px; 
-            padding: 2px; 
-            box-sizing: border-box; 
+        .prefix { color: #ffffff; text-shadow: none; }
+        
+        #shitty-text {
+            color: transparent;
+            -webkit-text-stroke: 2px var(--main-color);
+            filter: drop-shadow(0 0 10px var(--main-color));
+            margin-left: 15px;
         }
+
+        .cursor {
+            width: 8px;
+            height: 65px;
+            background-color: var(--main-color);
+            margin-left: 10px;
+            animation: blink 0.7s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .status-text { text-align: left; font-size: 14px; margin-bottom: 8px; color: var(--main-color); text-transform: uppercase; }
+
+        .progress-outer {
+            width: 100%;
+            height: 25px;
+            border: 1px solid #333;
+            padding: 3px;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+
         .progress-bar-fill { 
             height: 100%; 
             background-color: var(--main-color); 
             width: 0%; 
-            box-shadow: 0 0 10px var(--main-color); 
-            background-image: linear-gradient(90deg, rgba(0,0,0,0.4) 2px, transparent 2px); 
-            background-size: 15px 100%; 
+            box-shadow: 0 0 20px var(--main-color); 
+            transition: width 0.4s ease-out;
         }
+
+        .box-title { text-align: left; color: var(--main-color); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
 
         .console-box { 
             width: 100%; 
-            height: 120px; 
-            border: 1px solid var(--main-color); 
-            background: rgba(0, 0, 0, 0.9); 
-            padding: 10px; 
+            height: 220px; 
+            border: 1px solid #444; 
+            background: rgba(5, 5, 5, 0.95); 
+            padding: 15px; 
             text-align: left; 
             box-sizing: border-box; 
-            font-size: 12px; 
+            font-size: 13px; 
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
             justify-content: flex-end; 
         }
-        .log-line { margin: 1px 0; }
-        .log-prefix { color: var(--main-color); font-weight: bold; }
 
-        .players-header { 
-            margin-top: 15px; 
-            text-align: left; 
-            font-weight: bold; 
-            color: var(--main-color); 
-            border-bottom: 1px solid var(--main-color); 
-            padding-bottom: 3px; 
-            font-size: 14px; 
-        }
-        .players-list { 
-            width: 100%; 
-            height: 100px; 
-            background: rgba(0,0,0,0.6); 
-            display: flex; 
-            flex-wrap: wrap; 
-            align-content: flex-start; 
-            padding: 5px; 
-            box-sizing: border-box; 
-            font-size: 12px; 
-            overflow: hidden; 
-        }
-        .player-item { 
-            width: 33%; 
-            text-align: left; 
-            color: #eee; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            padding: 2px 0; 
-        }
-        .player-item::before { content: "> "; color: var(--main-color); }
+        .log-line { margin: 4px 0; color: #eee; border-left: 3px solid var(--main-color); padding-left: 12px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
 
-        .orange { 
-            position: absolute; 
-            top: -30px; 
-            font-size: 20px; 
-            z-index: 1; 
-            animation: fall linear forwards; 
-            user-select: none;
-        }
+        .snowflake { position: absolute; top: -40px; color: #fff; z-index: 1; animation: fall linear forwards; opacity: 0.3; }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
     </style>
 </head>
@@ -133,56 +121,61 @@
 
     <div id="bg-container"></div>
     <div id="overlay"></div>
+    <div class="grid-bg"></div>
 
-    <audio id="bg-music" loop preload="auto">
-        <source src="Sewerslvt-the-last-thing-she-sent-me-_get.gt_.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bg-music" loop preload="auto"></audio>
 
     <div class="container">
-        <h1>Z-<span>SHITTY</span></h1>
-        <div class="status-text" id="status-text">Connecting...</div>
-        <div class="progress-bar-container">
+        <div class="typing-container">
+            <span class="prefix">Z-</span>
+            <span id="shitty-text"></span>
+            <div class="cursor" id="cursor"></div>
+        </div>
+
+        <div class="status-text" id="status-display">SYSTEM_BOOT_SEQUENCE...</div>
+        <div class="progress-outer">
             <div class="progress-bar-fill" id="progress"></div>
         </div>
+
+        <div class="box-title">Terminal_Data_Stream</div>
         <div class="console-box" id="console"></div>
-        <div class="players-header">PLAYERS ONLINE [<span id="player-count">0</span>]</div>
-        <div class="players-list" id="player-list"></div>
     </div>
 
     <script>
+        const playlist = [
+            'track1.mp3', 'track2.mp3', 'track3.mp3', 'track4.mp3', 'track5.mp3',
+            'track6.mp3', 'track7.mp3', 'track8.mp3', 'track9.mp3', 'track10.mp3'
+        ];
+        
         const music = document.getElementById('bg-music');
+        const randomTrack = playlist[Math.floor(Math.random() * playlist.length)];
+        music.src = randomTrack;
         music.volume = 0.2;
 
         function attemptPlay() {
-            music.play().then(() => {
-                console.log("Audio started!");
-                removeListeners();
-            }).catch(err => {
-                console.log("Waiting for interaction...");
-            });
+            music.play().catch(() => {});
         }
+        window.addEventListener('mousedown', attemptPlay, { once: true });
+        window.addEventListener('keydown', attemptPlay, { once: true });
 
-        function removeListeners() {
-            window.removeEventListener('mousemove', attemptPlay);
-            window.removeEventListener('mousedown', attemptPlay);
-            window.removeEventListener('keydown', attemptPlay);
-        }
+        const textTarget = document.getElementById('shitty-text');
+        const cursor = document.getElementById('cursor');
+        const fullText = "SHITTY";
+        let charIndex = 0;
 
-        const autoPlayInterval = setInterval(() => {
-            if (!music.paused) {
-                clearInterval(autoPlayInterval);
+        function typeOnce() {
+            if (charIndex <= fullText.length) {
+                textTarget.textContent = fullText.substring(0, charIndex);
+                charIndex++;
+                setTimeout(typeOnce, 150);
             } else {
-                attemptPlay();
+                setTimeout(() => { cursor.style.display = 'none'; }, 1000);
             }
-        }, 500);
+        }
+        setTimeout(typeOnce, 500);
 
-        window.addEventListener('mousemove', attemptPlay);
-        window.addEventListener('mousedown', attemptPlay);
-        window.addEventListener('keydown', attemptPlay);
-
-        const images = ['1.jpg', '2.jpg', '3.jpg', '4.jpg']; 
+        const images = ['1.jpg', '2.jpg', '3.jpg']; 
         const bgContainer = document.getElementById('bg-container');
-        
         images.forEach((src, i) => {
             const div = document.createElement('div');
             div.classList.add('bg-slide');
@@ -191,72 +184,49 @@
             bgContainer.appendChild(div);
         });
 
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.bg-slide');
         setInterval(() => {
-            if(slides.length > 1) {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
+            const slides = document.querySelectorAll('.bg-slide');
+            const active = document.querySelector('.bg-slide.active');
+            if (active) {
+                active.classList.remove('active');
+                let next = active.nextElementSibling || slides[0];
+                next.classList.add('active');
             }
-        }, 4000);
+        }, 5000);
 
         setInterval(() => {
-            const orange = document.createElement('div');
-            orange.innerHTML = '🍊';
-            orange.className = 'orange';
-            orange.style.left = Math.random() * 100 + 'vw';
-            orange.style.animationDuration = (Math.random() * 3 + 3) + 's';
-            document.body.appendChild(orange);
-            setTimeout(() => orange.remove(), 6000);
+            const snow = document.createElement('div');
+            snow.innerHTML = '❄';
+            snow.className = 'snowflake';
+            snow.style.left = Math.random() * 100 + 'vw';
+            snow.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            document.body.appendChild(snow);
+            setTimeout(() => snow.remove(), 8000);
         }, 400);
 
-        const playerList = document.getElementById('player-list');
-        const playerCount = document.getElementById('player-count');
-        const consoleBox = document.getElementById('console');
-        const progressBar = document.getElementById('progress');
-        const statusText = document.getElementById('status-text');
-        let players = [];
-
-        function updatePlayerUI() {
-            playerList.innerHTML = "";
-            players.forEach(name => {
-                const p = document.createElement('div');
-                p.className = 'player-item';
-                p.innerText = name;
-                playerList.appendChild(p);
-            });
-            playerCount.innerText = players.length;
-        }
-
-        function SetPlayerEntity(name) {
-            if (!players.includes(name)) {
-                players.push(name);
-                updatePlayerUI();
-            }
-        }
-
         function addLog(text) {
+            const consoleBox = document.getElementById('console');
             const line = document.createElement('div');
             line.className = 'log-line';
-            line.innerHTML = `<span class="log-prefix">[SYS]</span> ${text}`;
+            line.innerHTML = text.toUpperCase();
             consoleBox.appendChild(line);
-            if (consoleBox.childNodes.length > 8) consoleBox.removeChild(consoleBox.firstChild);
+            if (consoleBox.childNodes.length > 9) consoleBox.removeChild(consoleBox.firstChild);
         }
 
         function SetStatusChanged(status) {
-            statusText.innerText = status;
+            document.getElementById('status-display').innerText = status.toUpperCase();
             addLog(status);
         }
 
-        function DownloadingFile(file) {
-            addLog("Downloading: " + file);
+        function SetFilesNeeded(needed) {
+            let p = Math.min(100, 100 - (needed / 2)); 
+            document.getElementById('progress').style.width = p + '%';
         }
 
-        if (!window.gmod && !navigator.userAgent.includes("Valve Source")) {
+        if (!navigator.userAgent.includes("Valve Source")) {
+            addLog(`Playing random track: ${randomTrack}`);
             let p = 0;
-            setInterval(() => { if (p < 100) { p += 0.5; progressBar.style.width = p + '%'; } }, 100);
-            addLog("Welcome to Z-shitty.");
+            setInterval(() => { if(p<100){ p++; document.getElementById('progress').style.width = p+'%'; } }, 100);
         }
     </script>
 </body>
