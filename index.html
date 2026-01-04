@@ -23,6 +23,13 @@
             justify-content: center;
         }
 
+        #click-handler {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999;
+            cursor: pointer;
+        }
+
         .grid-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -43,7 +50,7 @@
         .bg-slide.active { opacity: 1; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: -2; }
 
-        .container { z-index: 10; text-align: center; width: 850px; }
+        .container { z-index: 10; text-align: center; width: 850px; pointer-events: none; }
 
         .typing-container {
             font-size: 5.5rem;
@@ -119,6 +126,7 @@
 </head>
 <body>
 
+    <div id="click-handler"></div>
     <div id="bg-container"></div>
     <div id="overlay"></div>
     <div class="grid-bg"></div>
@@ -132,7 +140,7 @@
             <div class="cursor" id="cursor"></div>
         </div>
 
-        <div class="status-text" id="status-display">INITIALIZING...</div>
+        <div class="status-text" id="status-display">SYSTEM_BOOT_SEQUENCE...</div>
         <div class="progress-outer">
             <div class="progress-bar-fill" id="progress"></div>
         </div>
@@ -142,27 +150,39 @@
     </div>
 
     <script>
-        const playlist = [
-            'track1.mp3', 'track2.mp3', 'track3.mp3', 'track4.mp3', 'track5.mp3',
-            'track6.mp3', 'track7.mp3', 'track8.mp3', 'track9.mp3', 'track10.mp3'
-        ];
-        
+        function addLog(text) {
+            const consoleBox = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = text.toUpperCase();
+            consoleBox.appendChild(line);
+            if (consoleBox.childNodes.length > 10) consoleBox.removeChild(consoleBox.firstChild);
+        }
+
+        const playlist = ['track1.mp3', 'track2.mp3', 'track3.mp3', 'track4.mp3', 'track5.mp3', 'track6.mp3', 'track7.mp3', 'track8.mp3', 'track9.mp3', 'track10.mp3'];
         const music = document.getElementById('bg-music');
         const randomTrack = playlist[Math.floor(Math.random() * playlist.length)];
+        
         music.src = randomTrack;
-        music.volume = 0.4;
+        music.volume = 0.20;
 
-        function forcePlay() {
+        function playMusic() {
             music.play().then(() => {
-                window.removeEventListener('mousedown', forcePlay);
-                window.removeEventListener('keydown', forcePlay);
-            }).catch(e => console.log("Waiting for click..."));
+                addLog("AUDIO_PLAYING: " + randomTrack);
+                document.getElementById('click-handler').style.display = 'none';
+            }).catch(e => {
+                addLog("AUDIO_BLOCKED: CLICK ANYWHERE");
+            });
         }
-        window.addEventListener('mousedown', forcePlay);
-        window.addEventListener('keydown', forcePlay);
+
+        music.oncanplaythrough = () => {
+            addLog("AUDIO_READY: " + randomTrack);
+            playMusic();
+        };
+
+        document.getElementById('click-handler').addEventListener('mousedown', playMusic);
 
         const textTarget = document.getElementById('shitty-text');
-        const cursor = document.getElementById('cursor');
         const fullText = "SHITTY";
         let charIndex = 0;
 
@@ -172,30 +192,26 @@
                 charIndex++;
                 setTimeout(typeOnce, 150);
             } else {
-                setTimeout(() => { cursor.style.display = 'none'; }, 1000);
+                setTimeout(() => { document.getElementById('cursor').style.display = 'none'; }, 1000);
             }
         }
-        setTimeout(typeOnce, 600);
+        setTimeout(typeOnce, 800);
 
         const images = ['1.jpg', '2.jpg', '3.jpg', '4.jpg']; 
-        const bgContainer = document.getElementById('bg-container');
         images.forEach((src, i) => {
             const div = document.createElement('div');
-            div.classList.add('bg-slide');
+            div.className = 'bg-slide' + (i === 0 ? ' active' : '');
             div.style.backgroundImage = `url('${src}')`;
-            if (i === 0) div.classList.add('active');
-            bgContainer.appendChild(div);
+            document.getElementById('bg-container').appendChild(div);
         });
 
         setInterval(() => {
             const slides = document.querySelectorAll('.bg-slide');
             const active = document.querySelector('.bg-slide.active');
-            if(active){
-                active.classList.remove('active');
-                let next = active.nextElementSibling || slides[0];
-                next.classList.add('active');
-            }
+            active.classList.remove('active');
+            (active.nextElementSibling || slides[0]).classList.add('active');
         }, 5000);
+
         setInterval(() => {
             const snow = document.createElement('div');
             snow.innerHTML = '❄';
@@ -206,28 +222,15 @@
             setTimeout(() => snow.remove(), 8000);
         }, 400);
 
-        function addLog(text) {
-            const consoleBox = document.getElementById('console');
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            line.innerHTML = text.toUpperCase();
-            consoleBox.appendChild(line);
-            if (consoleBox.childNodes.length > 10) consoleBox.removeChild(consoleBox.firstChild);
-        }
-
         function SetStatusChanged(status) {
             document.getElementById('status-display').innerText = status.toUpperCase();
             addLog(status);
         }
-
         function SetFilesNeeded(needed) {
-            let p = Math.min(100, 100 - (needed / 2)); 
-            document.getElementById('progress').style.width = p + '%';
+            document.getElementById('progress').style.width = Math.min(100, 100 - (needed / 2)) + '%';
         }
 
         if (!navigator.userAgent.includes("Valve Source")) {
-            addLog("Random track selected: " + randomTrack);
-            addLog("Click anywhere to enable sound");
             let p = 0;
             setInterval(() => { if(p<100){ p++; document.getElementById('progress').style.width = p+'%'; } }, 100);
         }
