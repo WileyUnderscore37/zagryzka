@@ -208,8 +208,10 @@
         setInterval(() => {
             const slides = document.querySelectorAll('.bg-slide');
             const active = document.querySelector('.bg-slide.active');
-            active.classList.remove('active');
-            (active.nextElementSibling || slides[0]).classList.add('active');
+            if (active) {
+                active.classList.remove('active');
+                (active.nextElementSibling || slides[0]).classList.add('active');
+            }
         }, 5000);
 
         setInterval(() => {
@@ -222,17 +224,29 @@
             setTimeout(() => snow.remove(), 8000);
         }, 400);
 
+        let totalFiles = 100;
+
+        function SetFilesTotal(total) {
+            totalFiles = total;
+        }
+
         function SetStatusChanged(status) {
             document.getElementById('status-display').innerText = status.toUpperCase();
             addLog(status);
+            
+            if (status.toLowerCase().includes("client info")) {
+                document.getElementById('progress').style.width = '100%';
+            }
         }
+
         function SetFilesNeeded(needed) {
-            document.getElementById('progress').style.width = Math.min(100, 100 - (needed / 2)) + '%';
+            let progress = ((totalFiles - needed) / totalFiles) * 100;
+            document.getElementById('progress').style.width = Math.max(0, Math.min(100, progress)) + '%';
         }
 
         if (!navigator.userAgent.includes("Valve Source")) {
             let p = 0;
-            setInterval(() => { if(p<100){ p++; document.getElementById('progress').style.width = p+'%'; } }, 100);
+            setInterval(() => { if (p < 100) { p++; document.getElementById('progress').style.width = p + '%'; } }, 100);
         }
     </script>
 </body>
